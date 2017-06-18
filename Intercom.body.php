@@ -34,7 +34,6 @@ class Intercom {
     
     $dbr = wfGetDB(DB_SLAVE);
     # get the users lists
-    wfLoadExtensionMessages('Intercom');
     $list = Intercom::getList($dbr,$userid);
     
     if (count($list) == 0)
@@ -93,7 +92,7 @@ class Intercom {
     $wgOut->enableClientCache(false);
         
     $groupclass = Sanitizer::escapeClass( 'intercom-'.$mess[0]['realgroup'] );
-    $siteNotice .= "<div id=\"intercommessage\" class=\"usermessage {$groupclass}\" style=\"text-align:left; font-weight: normal;\">" . Intercom::_rendermessage($mess[0],$userid) . '</div>';
+    $siteNotice .= "<div id=\"intercommessage\" class=\"usermessage " . htmlspecialchars( $groupclass ) . "\" style=\"text-align:left; font-weight: normal;\">" . Intercom::_rendermessage($mess[0],$userid) . '</div>';
     return true;
   }
   
@@ -105,15 +104,6 @@ class Intercom {
     
     $dbr = wfGetDB(DB_SLAVE);
     # get the users lists
-    wfLoadExtensionMessages('Intercom');
-    /*$list = Intercom::getList($dbr,$userid);
-    
-    if (count($list) == 0)
-    {
-      return false;
-    }
-    
-    $conds = array('list' => $list, 'id' => $messid);*/
     $conds = array('id' => $messid);
     
     $res = $dbr->select('intercom_message','id, summary, message, author, list, timestamp, parsed',$conds,'Intercom::DisplayMessages',array('ORDER BY' => 'timestamp desc', 'LIMIT' => 1));
@@ -139,7 +129,6 @@ class Intercom {
     
     if ($mess)
     {
-      //return "<div id='intercommessage' style='text-align:left;'>" . Intercom::_rendermessage($mess,$userid, false) . '</div>';
       return Intercom::_rendermessage($mess,$userid, false);
     } else {
       return false;
@@ -150,7 +139,7 @@ class Intercom {
   static function rendermessage($mess, $userid, $buttons = false)
   {
     $groupclass = Sanitizer::escapeClass( 'intercom-'.$mess['realgroup'] );
-    return "<div id=\"intercommessage\" class=\"usermessage {$groupclass}\" style=\"text-align:left; font-weight: normal;\">" . Intercom::_rendermessage($mess,$userid,$buttons) . '</div>';
+    return "<div id=\"intercommessage\" class=\"usermessage " . htmlspecialchars( $groupclass ) . "\" style=\"text-align:left; font-weight: normal;\">" . Intercom::_rendermessage($mess,$userid,$buttons) . '</div>';
   }
   
   static private function _rendermessage($mess, $userid, $buttons = true)
@@ -279,13 +268,12 @@ class Intercom {
     }
     
     $order = $next ? 'asc' : 'desc';
-    $conds[] = 'timestamp ' . ($next ? '>' : '<') .  $time;
+    $conds[] = 'timestamp ' . ($next ? '>' : '<') .  $dbr->addQuotes( $time );
     $conds[] = "expires > " . time();
     $res = $dbr->select('intercom_message','id, summary, message, author, list, timestamp, parsed',$conds,'Intercom::_getMessage',array('ORDER BY' => "timestamp {$order}", 'LIMIT' => 1));
     if ($res->numRows() > 0)
     {
       $row = $res->fetchRow();
-      wfLoadExtensionMessages('Intercom');
       $groupname = $row['list'] == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $row['list'];
       $mess = array('id'       => $row['id'],
                       'summary'  => $row['summary'],
@@ -355,7 +343,6 @@ class SpecialIntercom extends SpecialPage {
     #SpecialPage::setGroup('Intercom','users');
     global $wgSpecialPageGroups;
     $wgSpecialPageGroups['Intercom']='users';
-    wfLoadExtensionMessages('Intercom');
   }
   function execute( $par ) {
     global $wgOut, $wgRequest, $wgUser;

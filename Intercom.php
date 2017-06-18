@@ -60,19 +60,6 @@ function Intercomaddjs($out) {
 $wgIntercomIP = dirname( __FILE__ );
 $wgExtensionMessagesFiles['Intercom'] = "$wgIntercomIP/Intercom.i18n.php";
 
-
-//Avoid unstubbing $wgParser on setHook() too early on modern (1.12+) MW versions, as per r35980
-if ( defined( 'MW_SUPPORTS_PARSERFIRSTCALLINIT' ) ) {
-	$wgHooks['ParserFirstCallInit'][] = 'intercominit';
-} else { // Otherwise do things the old fashioned way
-	$wgExtensionFunctions[] = 'intercominit';
-}
-
-function intercominit() {
-  wfLoadExtensionMessages('Intercom');
-  return true;
-}
-
 ## Load classes
 $wgAutoloadClasses['Intercom'] =  "$wgIntercomIP/Intercom.body.php";
 $wgAutoloadClasses['SpecialIntercom'] =  "$wgIntercomIP/Intercom.body.php";
