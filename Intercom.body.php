@@ -7,7 +7,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'send')
     {
-      return wfMsgExt('intercomlogsend', array( 'parseinline' ), $title->getPrefixedText(), $params[0] == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $params[0]);
+      return wfMessage('intercomlogsend')->params($title->getPrefixedText(), $params[0] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $params[0])->parseInline();
     }
   }
 
@@ -16,7 +16,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'hide')
     {
-      return wfMsgExt('intercomloghide', array( 'parseinline' ), $title->getPrefixedText());
+      return wfMessage('intercomloghide')->params($title->getPrefixedText())->parseInline();
     }
   }
 
@@ -25,7 +25,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'unhide')
     {
-      return wfMsgExt('intercomlogunhide', array( 'parseinline' ), $title->getPrefixedText());
+      return wfMessage('intercomlogunhide')->params($title->getPrefixedText())->parseInline();
     }
   }
   static function DisplayMessages(&$siteNotice) {
@@ -68,7 +68,7 @@ class Intercom {
     {
       while ($row = $res->fetchRow())
       {
-        $groupname = $row['list'] == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $row['list'];
+        $groupname = $row['list'] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $row['list'];
         $mess[] = array('id'       => $row['id'],
                         'summary'  => $row['summary'],
                         'text'     => $row['message'],
@@ -113,7 +113,7 @@ class Intercom {
       if ($res->numRows() > 0)
       {
         $row = $res->fetchRow();
-        $groupname = $row['list'] == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $row['list'];
+        $groupname = $row['list'] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $row['list'];
         $mess = array('id'       => $row['id'],
                         'summary'  => $row['summary'],
                         'text'     => $row['message'],
@@ -145,9 +145,9 @@ class Intercom {
   static private function _rendermessage($mess, $userid, $buttons = true)
   {
     global $wgLang;
-    $mNext = wfMsg('intercom-next');
-    $mPrev = wfMsg('intercom-prev');
-    $mMark = wfMsg('intercom-markread');
+    $mNext = wfMessage('intercom-next')->escaped();
+    $mPrev = wfMessage('intercom-prev')->escaped();
+    $mMark = wfMessage('intercom-markread')->escaped();
     $mId = $mess['id'];
     $mTime = $mess['time'];
     if ($buttons)
@@ -205,7 +205,7 @@ class Intercom {
       $params[] = $prevButton;
       $params[] = $markButton;
     }
-    $text = wfMsgWikiHtml(($buttons ? 'intercomnotice' : 'intercommessage'), $params);
+    $text = wfMessage($buttons ? 'intercomnotice' : 'intercommessage')->rawParams($params)->parse();
     return $text;
   }
   
@@ -274,7 +274,7 @@ class Intercom {
     if ($res->numRows() > 0)
     {
       $row = $res->fetchRow();
-      $groupname = $row['list'] == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $row['list'];
+      $groupname = $row['list'] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $row['list'];
       $mess = array('id'       => $row['id'],
                       'summary'  => $row['summary'],
                       'text'     => $row['message'],
@@ -367,12 +367,12 @@ class SpecialIntercom extends SpecialPage {
       $expires = strtotime( $expiry_input );
       if ($expires < 0 || $expires === false)
       {
-        $wgOut->addWikiText('<div class="error">' . wfMsg('intercom-wrongexpiry') . '</div>');
+        $wgOut->addWikiText('<div class="error">' . wfMessage('intercom-wrongexpiry')->text() . '</div>');
         $preview = true;
       }
       # check for valid group
       if (!$wgRequest->getVal('group')) {
-        $wgOut->addWikiText('<div class="error">' . wfMsg('intercom-nogroup') . '</div>');
+        $wgOut->addWikiText('<div class="error">' . wfMessage('intercom-nogroup')->text() . '</div>');
         $preview = true;
       }
       # check if user has permission to send to urgent or message
@@ -400,7 +400,7 @@ class SpecialIntercom extends SpecialPage {
         $id = $wgUser->blockedBy();
         $reason = $wgUser->blockedFor();
         if( $reason == '' ) {
-          $reason = wfMsg( 'blockednoreason' );
+          $reason = wfMessage( 'blockednoreason' )->text();
         }
         $ip = wfGetIP();
 
@@ -419,7 +419,7 @@ class SpecialIntercom extends SpecialPage {
 
         if ( $blockExpiry == 'infinity' ) {
           // Entry in database (table ipblocks) is 'infinity' but 'ipboptions' uses 'infinite' or 'indefinite'
-          $scBlockExpiryOptions = wfMsg( 'ipboptions' );
+          $scBlockExpiryOptions = wfMessage( 'ipboptions' )->text();
 
           foreach ( explode( ',', $scBlockExpiryOptions ) as $option ) {
             if ( strpos( $option, ':' ) == false )
@@ -461,7 +461,7 @@ class SpecialIntercom extends SpecialPage {
     if (($action == 'writenew' || $action == 'selectgroups' || $action == 'cancel' || $action == 'uncancel') && 
          $wgRequest->wasPosted() && !$wgUser->matchEditToken( $wgRequest->getVal( 'wpEditToken' ) ) )
     {
-      $wgOut->addWikiText(wfMsg('session_fail_preview'));
+      $wgOut->addWikiText(wfMessage('session_fail_preview')->text());
     }
 		
 		if (($action == 'cancel' || $action == 'uncancel' ) && $wgRequest->wasPosted() && $wgUser->matchEditToken( $wgRequest->getVal( 'wpEditToken' ) ) )
@@ -477,16 +477,16 @@ class SpecialIntercom extends SpecialPage {
 				$log = new LogPage('intercom');
 				$target = SpecialPage::getTitleFor('intercom',$wgRequest->getVal('message'));
 				$log->addEntry('hide',$target,null,null,$wgUser);
-		    $wgOut->addWikiText(wfMsg('intercom-cancelsuccess'));
+		    $wgOut->addWikiText(wfMessage('intercom-cancelsuccess')->text());
       } elseif ($action == 'uncancel') {
 		    Intercom::markUnread($wgRequest->getVal('message'),0);
 				$log = new LogPage('intercom');
 				$target = SpecialPage::getTitleFor('intercom',$wgRequest->getVal('message'));
 				$log->addEntry('unhide',$target,null,null,$wgUser);
-		    $wgOut->addWikiText(wfMsg('intercom-uncancelsuccess'));        
+		    $wgOut->addWikiText(wfMessage('intercom-uncancelsuccess')->text());        
       }
 		  $sk = $wgUser->getSkin();
-      $wgOut->addHTML($sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-return'),array(),array() , 'known'));
+      $wgOut->addHTML($sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-return')->escaped(),array(),array() , 'known'));
 		} elseif ($action == 'selectgroups' && $wgRequest->wasPosted() && $wgUser->matchEditToken( $wgRequest->getVal( 'wpEditToken' ) ) )
 		{
       
@@ -497,9 +497,9 @@ class SpecialIntercom extends SpecialPage {
       
 		  if ($wgUser->getId() == 0)
 		  {
-		    $wgOut->addWikiText(wfMsg('intercom-anon'));
+		    $wgOut->addWikiText(wfMessage('intercom-anon')->text());
 		  } else {
-        $lists = wfMsg('intercom-list');
+        $lists = wfMessage('intercom-list')->text();
         $lists = preg_replace("/\*/","",$lists);
         $options = split("\n",$lists);
         $options = preg_replace("/^intercom-urgent$/","_intercom-urgent",$options);
@@ -540,7 +540,7 @@ class SpecialIntercom extends SpecialPage {
       
       if ($wgUser->getId() == 0)
       {
-        $wgOut->addWikiText(wfMsg('intercom-anon'));
+        $wgOut->addWikiText(wfMessage('intercom-anon')->text());
       } else {
         if ($wgRequest->getVal('intercom_sendmessage') && $wgRequest->getVal('group'))
         {
@@ -583,9 +583,9 @@ class SpecialIntercom extends SpecialPage {
       
       if ($wgUser->getId() == 0)
       {
-        $wgOut->addWikiText(wfMsg('intercom-anon'));
+        $wgOut->addWikiText(wfMessage('intercom-anon')->text());
       } else {
-        $lists = wfMsg('intercom-list');
+        $lists = wfMessage('intercom-list')->text();
         $lists = preg_replace("/\*/","",$lists);
         $options = split("\n",$lists);
         $options = preg_replace("/^intercom-urgent$/","_intercom-urgent",$options);
@@ -607,12 +607,12 @@ class SpecialIntercom extends SpecialPage {
         $wgOut->addHTML(
           Xml::openElement('form', array( 'id' => 'intercomgroups', 'method' => 'post', 'action' => $titleObject->getLocalURL("intercomaction=selectgroups"), ) ) .
           Xml::openElement( 'fieldset' ) .
-          Xml::element( 'legend', null, wfMsg( 'intercomgroups-legend' ) )
+          Xml::element( 'legend', null, wfMessage( 'intercomgroups-legend' )->text() )
         );
         
         $wgOut->addHTML('<p>' .
                         Xml::check('intercom-urgent',$checked['intercom-urgent'],array('id' => 'intercom-urgent')) .
-                        Xml::label(wfMsg('intercom-urgentlist'),'intercom-urgent') .
+                        Xml::label(wfMessage('intercom-urgentlist')->text(),'intercom-urgent') .
                         '</p>'
                        );
         
@@ -626,7 +626,7 @@ class SpecialIntercom extends SpecialPage {
         }
         
         $wgOut->addHTML(
-          Xml::submitButton( wfMsg( 'intercomgroups-save' ),
+          Xml::submitButton( wfMessage( 'intercomgroups-save' )->text(),
                              array('name' => 'intercomgroups_save',
                                    'accesskey' => 's') ) .
           html::hidden('wpEditToken', $wgUser->editToken() ) .
@@ -642,7 +642,7 @@ class SpecialIntercom extends SpecialPage {
       
       if ($wgUser->getId() == 0)
       {
-        $wgOut->addWikiText(wfMsg('intercom-anon'));
+        $wgOut->addWikiText(wfMessage('intercom-anon')->text());
       } else {
         $dbr = wfGetDB(DB_SLAVE);
         $res = $dbr->select('intercom_list','list',
@@ -668,7 +668,7 @@ class SpecialIntercom extends SpecialPage {
           $pre = $myParser->preSaveTransform($wgRequest->getVal('wpTextbox1',''), $wgTitle, $wgUser , $myParserOptions);
           
           $previewlist = urldecode($wgRequest->getVal('group'));
-          $groupname = $previewlist == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $previewlist;
+          $groupname = $previewlist == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $previewlist;
           $mess = array('id'       => 0,
                         'summary'  => htmlspecialchars($summary),
                         'text'     => $pre,
@@ -690,8 +690,8 @@ class SpecialIntercom extends SpecialPage {
           
         }
         
-        $expiryOptionsRaw = wfMsgForContent( 'intercom-expires' );
-        $expiryOptions = Xml::option( wfMsg( 'intercom-other' ), 'other' );
+        $expiryOptionsRaw = wfMessage( 'intercom-expires' )->inContentLanguage()->text();
+        $expiryOptions = Xml::option( wfMessage( 'intercom-other' )->text(), 'other' );
         foreach (explode(',', $expiryOptionsRaw) as $option) {
           if ( strpos($option, ":") === false ) $option = "$option:$option";
           list($show, $value) = explode(":", $option);
@@ -730,12 +730,11 @@ class SpecialIntercom extends SpecialPage {
         	'id' => "wpSummaryLabel"
         );
         
-        $label = Xml::tags( 'label', array( 'for' => $inputAttrs['id'] ), wfMsg('intercom-summary'));
+        $label = Xml::element( 'label', array( 'for' => $inputAttrs['id'] ), wfMessage('intercom-summary')->text());
         $label = Xml::tags( 'span', $spanLabelAttrs, $label );
         
         $input = Html::input( 'wpSummary', $summary, 'text', $inputAttrs );
         
-        /*list($label, $input) = EditPage::getSummaryInput($summary, wfMsg('intercom-summary'), array( 'class' => 'mw-summary' ), array());*/
         $wgOut->addHTML("{$label} {$input}" .
           "</p>" .
           Xml::tags('select',
@@ -757,14 +756,14 @@ class SpecialIntercom extends SpecialPage {
           }
         }
         if (in_array('intercom-sendurgent',$wgUser->getRights()) ) { 
-          $wgOut->addHTML(Xml::option(  wfMsg('intercom-urgentlist'), 'intercom-urgent', $wgRequest->getVal('group') === 'intercom-urgent' ? true : false ) . "\n");
+          $wgOut->addHTML(Xml::option(  wfMessage('intercom-urgentlist')->text(), 'intercom-urgent', $wgRequest->getVal('group') === 'intercom-urgent' ? true : false ) . "\n");
         }
         $wgOut->addHTML(
           "</select>" . '&nbsp;' .
-          ((count($groups) > 0) ? Xml::submitButton( wfMsg( 'intercom-sendmessage' ),
+          ((count($groups) > 0) ? Xml::submitButton( wfMessage( 'intercom-sendmessage' )->text(),
                              array('name' => 'intercom_sendmessage',
                                    'accesskey' => 's') ) : '') . '&nbsp;' .
-          Xml::submitButton( wfMsg( 'intercom-preview' ),
+          Xml::submitButton( wfMessage( 'intercom-preview' )->text(),
                              array('name' => 'intercom_preview',
                                    'accesskey' => 'p') ) . '&nbsp;' .
           html::hidden('wpEditToken', $wgUser->editToken() ) .
@@ -786,10 +785,10 @@ class SpecialIntercom extends SpecialPage {
           {
             if (in_array('intercom-sendurgent',$wgUser->getRights()))
             {          
-              $wgOut->addWikiText(wfMsg('intercom-cancelconfirm'));
+              $wgOut->addWikiText(wfMessage('intercom-cancelconfirm')->text());
               $wgOut->addHTML(
                 Xml::openElement('form', array( 'id' => 'intercomcancel', 'method' => 'post', 'action' => $titleObject->getLocalURL("intercomaction=cancel"), ) ) .
-                Xml::submitButton( wfMsg( 'intercom-cancelbutton' ),
+                Xml::submitButton( wfMessage( 'intercom-cancelbutton' )->text(),
                                    array('name' => 'intercom_cancelbutton',
                                    'accesskey' => 's') ) .
                 html::hidden('message', $messid ) .
@@ -802,10 +801,10 @@ class SpecialIntercom extends SpecialPage {
           } elseif ($action == 'uncancel') {
             if (in_array('intercom-sendurgent',$wgUser->getRights()))
             {          
-              $wgOut->addWikiText(wfMsg('intercom-uncancelconfirm'));
+              $wgOut->addWikiText(wfMessage('intercom-uncancelconfirm')->text());
               $wgOut->addHTML(
                 Xml::openElement('form', array( 'id' => 'intercomuncancel', 'method' => 'post', 'action' => $titleObject->getLocalURL("intercomaction=uncancel"), ) ) .
-                Xml::submitButton( wfMsg( 'intercom-uncancelbutton' ),
+                Xml::submitButton( wfMessage( 'intercom-uncancelbutton' )->text(),
                                    array('name' => 'intercom_uncancelbutton',
                                    'accesskey' => 's') ) .
                 html::hidden('message', $messid ) .
@@ -817,16 +816,16 @@ class SpecialIntercom extends SpecialPage {
             }
           }
           $wgOut->addHTML(
-            Xml::fieldset(wfMsg('intercom-messageheader'),
+            Xml::fieldset(wfMessage('intercom-messageheader')->text(),
             $mes
             ));
         } else {
-          $wgOut->addWikiText(wfMsg('intercom-nomessage'));
+          $wgOut->addWikiText(wfMessage('intercom-nomessage')->text());
         }
       }
       $sk = $wgUser->getSkin();
-      $newlink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-newlink'),array(),array('intercomaction' => 'writenew') , 'known');
-      $groupslink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-groupslink'),array(),array('intercomaction' => 'selectgroups') , 'known');
+      $newlink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-newlink')->text(),array(),array('intercomaction' => 'writenew') , 'known');
+      $groupslink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-groupslink')->text(),array(),array('intercomaction' => 'selectgroups') , 'known');
       $wgOut->addHTML("$newlink<p/>$groupslink<p/>");
       # pager
       $dbr = wfGetDB(DB_SLAVE);
@@ -863,11 +862,11 @@ class IntercomPager extends ReverseChronologicalPager {
       $sk = $wgUser->getSkin();
     }
     $user = User::newFromId($row->author);
-    $listname = $row->list == 'intercom-urgent' ? wfMsg('intercom-urgentlist') : $row->list;
-    $line = wfMsgReplaceArgs( wfMsg('intercom-pager-row'), 
+    $listname = $row->list == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $row->list;
+    $line = wfMsgReplaceArgs( wfMessage('intercom-pager-row')->text(), 
                               array( $user->getName(), $listname, $wgLang->timeanddate( $row->timestamp, true ), 
                               $wgLang->timeanddate( $row->expires, true ), $row->summary ) );
-    $readlink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-pager-readlink'),array(),array('message' => $row->id) , 'known');
+    $readlink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-pager-readlink')->text(),array(),array('message' => $row->id) , 'known');
     $cancellink = '';
     $uncancellink = '';
     if (in_array('intercom-sendurgent',$wgUser->getRights()) && $row->list == 'intercom-urgent')
@@ -876,10 +875,10 @@ class IntercomPager extends ReverseChronologicalPager {
       $res = $dbr->select('intercom_read','messageid, userid',array('messageid' => $row->id, 'userid' => 0),'IntercomPager::formatRow');
       if ($res->numRows() == 0)
       {
-        $cancellink = ' - ' . $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-pager-cancellink'),array(),
+        $cancellink = ' - ' . $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-pager-cancellink')->text(),array(),
                               array('intercomaction' => 'cancel', 'message' => $row->id) , 'known');
       } else {
-        $uncancellink = ' - ' . $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMsg('intercom-pager-uncancellink'),array(),
+        $uncancellink = ' - ' . $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-pager-uncancellink')->text(),array(),
                                 array('intercomaction' => 'uncancel', 'message' => $row->id) , 'known');
       }
     }
