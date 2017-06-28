@@ -190,8 +190,7 @@ class Intercom {
     //buttons should not be parsed
     
     $sendertext = $mess['sender'];
-    global $wgUser;
-    $skin = $wgUser->getSkin();
+    $skin = RequestContext::getMain()->getSkin();
     if ($skin) {
       $sendertext = $skin->userLink( $mess['senderid'], $mess['sender'] ) . ' (' .
                     $skin->userTalkLink( $mess['senderid'], $mess['sender'] ) . ')';
@@ -485,7 +484,7 @@ class SpecialIntercom extends SpecialPage {
 				$log->addEntry('unhide',$target,null,null,$wgUser);
 		    $wgOut->addWikiText(wfMessage('intercom-uncancelsuccess')->text());        
       }
-		  $sk = $wgUser->getSkin();
+		  $sk = RequestContext::getMain()->getSkin();
       $wgOut->addHTML($sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-return')->escaped(),array(),array() , 'known'));
 		} elseif ($action == 'selectgroups' && $wgRequest->wasPosted() && $wgUser->matchEditToken( $wgRequest->getVal( 'wpEditToken' ) ) )
 		{
@@ -823,7 +822,7 @@ class SpecialIntercom extends SpecialPage {
           $wgOut->addWikiText(wfMessage('intercom-nomessage')->text());
         }
       }
-      $sk = $wgUser->getSkin();
+      $sk = RequestContext::getMain()->getSkin();
       $newlink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-newlink')->text(),array(),array('intercomaction' => 'writenew') , 'known');
       $groupslink = $sk->link( SpecialPage::getTitleFor( 'intercom' ), wfMessage('intercom-groupslink')->text(),array(),array('intercomaction' => 'selectgroups') , 'known');
       $wgOut->addHTML("$newlink<p/>$groupslink<p/>");
@@ -859,7 +858,7 @@ class IntercomPager extends ReverseChronologicalPager {
     static $sk=null;
     if( is_null( $sk ) )
     {
-      $sk = $wgUser->getSkin();
+      $sk = RequestContext::getMain()->getSkin();
     }
     $user = User::newFromId($row->author);
     $listname = $row->list == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $row->list;
