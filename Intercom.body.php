@@ -192,8 +192,8 @@ class Intercom {
     $sendertext = $mess['sender'];
     $skin = RequestContext::getMain()->getSkin();
     if ($skin) {
-      $sendertext = $skin->userLink( $mess['senderid'], $mess['sender'] ) . ' (' .
-                    $skin->userTalkLink( $mess['senderid'], $mess['sender'] ) . ')';
+      $sendertext = Linker::userLink( $mess['senderid'], $mess['sender'] ) . ' (' .
+                    Linker::userTalkLink( $mess['senderid'], $mess['sender'] ) . ')';
     }
     
     $params = array( $mess['summary'], $messtext, $sendertext, $mess['group'], 
