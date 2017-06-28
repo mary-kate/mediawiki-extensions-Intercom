@@ -7,7 +7,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'send')
     {
-      return wfMessage('intercomlogsend')->params($title->getPrefixedText(), $params[0] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $params[0])->parseInline();
+      return wfMessage('intercomlogsend')->params($title->getPrefixedText(), $params[0] == 'intercom-urgent' ? wfMessage('intercom-urgentlist')->text() : $params[0])->parse();
     }
   }
 
@@ -16,7 +16,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'hide')
     {
-      return wfMessage('intercomloghide')->params($title->getPrefixedText())->parseInline();
+      return wfMessage('intercomloghide')->params($title->getPrefixedText())->parse();
     }
   }
 
@@ -25,7 +25,7 @@ class Intercom {
   {
     if ($type == 'intercom' && $action = 'unhide')
     {
-      return wfMessage('intercomlogunhide')->params($title->getPrefixedText())->parseInline();
+      return wfMessage('intercomlogunhide')->params($title->getPrefixedText())->parse();
     }
   }
   static function DisplayMessages(&$siteNotice) {
