@@ -402,7 +402,7 @@ class SpecialIntercom extends SpecialPage {
         if( $reason == '' ) {
           $reason = wfMessage( 'blockednoreason' )->text();
         }
-        $ip = wfGetIP();
+        $ip = $wgRequest->getIP();
 
         if ( is_numeric( $id ) ) {
           $name = User::whoIs( $id );
