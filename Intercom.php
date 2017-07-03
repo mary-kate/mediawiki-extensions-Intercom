@@ -22,10 +22,10 @@ $wgGroupPermissions['tech']['intercom-sendurgent'] = true;
 $wgGroupPermissions['autoconfirmed']['intercom-sendmessage'] = true;
 
 $wgExtensionCredits['other'][] = array(
-        'name' => 'RationalWiki Intercom',
-        'author' => '[http://rationalwiki.com/wiki/User:Tmtoulouse Trent Toulouse]',
-        'url' => 'http://rationalwiki.com/',
-        'description' => 'Creates a sitewide message to all users'
+	'name' => 'RationalWiki Intercom',
+	'author' => '[http://rationalwiki.com/wiki/User:Tmtoulouse Trent Toulouse]',
+	'url' => 'http://rationalwiki.com/',
+	'description' => 'Creates a sitewide message to all users'
 );
 
 $wgHooks['SiteNoticeAfter'][] = 'Intercom::DisplayMessages';
@@ -41,19 +41,18 @@ $wgLogActionsHandlers['intercom/hide'] = 'Intercom::loghidehandler';
 $wgLogActionsHandlers['intercom/unhide'] = 'Intercom::logunhidehandler';
 
 global $wgUseAjax;
-if ($wgUseAjax)
-{
-  $wgAjaxExportList[] = 'Intercom::getNextMessage';
-  $wgAjaxExportList[] = 'Intercom::getPrevMessage';
-  $wgAjaxExportList[] = 'Intercom::markRead';
+if ( $wgUseAjax ) {
+	$wgAjaxExportList[] = 'Intercom::getNextMessage';
+	$wgAjaxExportList[] = 'Intercom::getPrevMessage';
+	$wgAjaxExportList[] = 'Intercom::markRead';
 }
 
 $wgHooks['AjaxAddScript'][] = 'Intercomaddjs';
 
-function Intercomaddjs($out) {
-  global $wgJsMimeType, $wgScriptPath;
-  $out->addScript("<script type=\"{$wgJsMimeType}\" src=\"{$wgScriptPath}/extensions/Intercom/js/Intercom.js\"></script>");
-  return true;
+function Intercomaddjs( $out ) {
+	global $wgJsMimeType, $wgScriptPath;
+	$out->addScript( "<script type=\"{$wgJsMimeType}\" src=\"{$wgScriptPath}/extensions/Intercom/js/Intercom.js\"></script>" );
+	return true;
 }
 
 ## include path
@@ -61,5 +60,5 @@ $wgIntercomIP = dirname( __FILE__ );
 $wgExtensionMessagesFiles['Intercom'] = "$wgIntercomIP/Intercom.i18n.php";
 
 ## Load classes
-$wgAutoloadClasses['Intercom'] =  "$wgIntercomIP/Intercom.body.php";
-$wgAutoloadClasses['SpecialIntercom'] =  "$wgIntercomIP/Intercom.body.php";
+$wgAutoloadClasses['Intercom'] = "$wgIntercomIP/Intercom.body.php";
+$wgAutoloadClasses['SpecialIntercom'] = "$wgIntercomIP/Intercom.body.php";
