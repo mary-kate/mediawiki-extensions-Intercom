@@ -850,7 +850,7 @@ class SpecialIntercom extends SpecialPage {
 									)
 								) .
 								Html::hidden( 'message', $messid ) .
-								Html::hidden( 'wpEditToken', $user->editToken() ) .
+								Html::hidden( 'wpEditToken', $user->getEditToken() ) .
 								Xml::closeElement( 'form' )
 							);
 						} else {
