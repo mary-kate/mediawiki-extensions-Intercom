@@ -1,0 +1,73 @@
+{
+	"name": "RationalWiki Intercom",
+	"version": "2.0",
+	"author": [
+		"[http://rationalwiki.com/wiki/User:Tmtoulouse Trent Toulouse]"
+	],
+	"license-name": "GPL-2.0+",
+	"url": "https://github.com/RationalWiki/mediawiki-extensions-Intercom",
+	"descriptionmsg": "intercom-desc",
+	"type": "other",
+	"callback": "IntercomHooks::onRegistration",
+	"SpecialPages": {
+		"Intercom": "SpecialIntercom"
+	},
+	"MessagesDirs": {
+		"Intercom": [
+			"i18n"
+		]
+	},
+	"ExtensionMessagesFiles": {
+		"IntercomAliases": "Intercom.alias.php"
+	},
+	"LogTypes": [
+		"intercom"
+	],
+	"LogNames": {
+		"intercom": "intercomlogname"
+	},
+	"LogHeaders": {
+		"intercom": "intercomlogheader"
+	},
+	"LogActionsHandlers": {
+		"intercom/send": "Intercom::logsendhandler",
+		"intercom/hide": "Intercom::loghidehandler",
+		"intercom/unhide": "Intercom::logunhidehandler"
+	},
+	"AutoloadClasses": {
+		"Intercom": "Intercom.body.php",
+		"IntercomHooks": "IntercomHooks.php",
+		"IntercomPager": "Intercom.body.php",
+		"SpecialIntercom": "Intercom.body.php"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": "IntercomHooks::onLoadExtensionSchemaUpdates",
+		"SiteNoticeAfter": "IntercomHooks::onSiteNoticeAfter"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "Intercom"
+	},
+	"ResourceModules": {
+		"ext.intercom": {
+			"scripts": "js/Intercom.js",
+			"dependencies": "mediawiki.util"
+		},
+		"ext.intercom.special": {
+			"scripts": "js/SpecialIntercom.js"
+		}
+	},
+	"AvailableRights": [
+		"intercom-sendmessage",
+		"intercom-sendurgent"
+	],
+	"GroupPermissions": {
+		"autoconfirmed": {
+			"intercom-sendmessage": true
+		},
+		"tech": {
+			"intercom-sendurgent": true
+		}
+	},
+	"manifest_version": 1
+}

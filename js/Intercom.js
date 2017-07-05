@@ -1,106 +1,123 @@
 /*<![CDATA[*/
+( function ( mw, $ ) {
 
-addOnloadHook( intercomExpiryOption );
-
-function intercomrender( div, response ) {
-	var res = eval( '(' + response + ')' );
-	div.innerHTML = res['message'];
-	div.setAttribute( 'class', res['class'] );
-}
-
-function intercomExpiryOption() {
-	var expirydrop = document.getElementById( 'wpExpiry' );
-	var expiryother = document.getElementById( 'wpExpiryOther' );
-	if ( expirydrop && expiryother ) {
-		if ( expirydrop.value == 'other' ) {
-			expiryother.style.display = 'inline';
-		} else {
-			expiryother.style.display = 'none';
+function makeRequest( direction, id, time ) {
+	// @todo FIXME: validate that direction is either 'Prev' or 'Next', no other values are OK
+	$.ajax( {
+		type: 'GET',
+		url: mw.util.wikiScript(/* 'api' */),
+		data: {
+			action: 'ajax',
+			rs: 'Intercom::get' + direction + 'Message',
+			rsargs: [ id, time ]
+			// format: 'json'
 		}
-	}
-}
-
-function nextMessage( id, time ) {
-	sajax_do_call( 'Intercom::getNextMessage', [ id, time ], nextupdate );
-}
-
-function prevMessage( id, time ) {
-	sajax_do_call( 'Intercom::getPrevMessage', [ id, time ], prevupdate );
-}
-
-function prevupdate( req ) {
-	if ( req.readyState == 4 && req.status == 200 ) {
-		var intercommessage = document.getElementById( 'intercommessage' );
-		if ( !intercommessage ) {
-			return;
+	} ).done( function ( data ) {
+		if ( $( '#intercommessage' ) && data ) {
+			$( '#intercommessage' ).addClass( data.class ).text( data.message );
 		}
-		if ( req.responseText != 'false' ) {
-			//alert('prev: ' + req.responseText);
-			intercomrender( intercommessage,req.responseText );
-		}
-	} else {
-		alert( 'An error occured:' + req.responseText );
-	}
-}
-
-function nextupdate( req ) {
-	if ( req.readyState == 4 && req.status == 200 ) {
-		var intercommessage = document.getElementById( 'intercommessage' );
-		if ( !intercommessage ) {
-			return;
-		}
-		if ( req.responseText != 'false' ) {
-			//alert('next: ' + req.responseText);
-			intercomrender( intercommessage,req.responseText );
-		}
-	} else {
-		alert( 'An error occured:' + req.responseText );
-	}
-}
-
-function readnextMessage( id, time ) {
-	sajax_do_call( 'Intercom::getNextMessage', [ id, time ], function( req ) {
-		if ( req.readyState == 4 && req.status == 200 ) {
-			if ( req.responseText == 'false' ) {
-				sajax_do_call( 'Intercom::getPrevMessage', [ id, time ], function( req ) {
-					if ( req.readyState == 4 && req.status == 200 ) {
-						var intercommessage = document.getElementById( 'intercommessage' );
-						if ( !intercommessage ) {
-							return;
-						}
-						if ( req.responseText == 'false' ) {
-							intercommessage.style.display = 'none';
-						} else {
-							//alert(req.responseText);
-							intercomrender( intercommessage, req.responseText );
-						}
-					} else {
-						alert( 'An error occured:' + req.responseText );
-					}
-				} );
-			} else {
-				//alert(req.responseText);
-				intercomrender( intercommessage,req.responseText );
-			}
-		} else {
-			alert( 'An error occured:' + req.responseText );
-		}
+	} ).fail( function ( jqXHR, textStatus, errorThrown ) {
+		alert( 'An error occured:' + textStatus );
 	} );
 }
 
-function markreadupdate( req, id, time ) {
-	if ( req.readyState == 4 && req.status == 200) {
-		arr = req.responseText;
-		if ( arr == 'true' ) {
-			readnextMessage( id, time );
+function nextMessage( id, time ) {
+	makeRequest( 'Next', id, time );
+}
+
+function prevMessage( id, time ) {
+	makeRequest( 'Prev', id, time );
+}
+
+function readNextMessage( id, time ) {
+	$.ajax( {
+		type: 'GET',
+		url: mw.util.wikiScript(/* 'api' */),
+		data: {
+			action: 'ajax',
+			rs: 'Intercom::getNextMessage',
+			rsargs: [ id, time ]
+			// format: 'json'
 		}
-	} else {
-		alert( 'An error occured:' + req.responseText );
-	}
+	} ).done( function ( data ) {
+		if ( data === 'false' /* sic! */ ) {
+			$.ajax( {
+				type: 'GET',
+				url: mw.util.wikiScript(/* 'api' */),
+				data: {
+					action: 'ajax',
+					rs: 'Intercom::getPrevMessage',
+					rsargs: [ id, time ]
+					// format: 'json'
+				}
+			} ).done( function ( data ) {
+				if ( !$( '#intercommessage' ) ) {
+					return;
+				}
+				if ( data === 'false' /* sic! */ ) {
+					$( '#intercommessage' ).hide();
+				} else {
+					$( '#intercommessage' ).addClass( data.class ).text( data.message );
+				}
+			} ).fail( function ( jqXHR, textStatus, errorThrown ) {
+				alert( 'An error occured:' + textStatus );
+			} );
+		}
+	} ).fail( function ( jqXHR, textStatus, errorThrown ) {
+		alert( 'An error occured:' + textStatus );
+	} );
 }
 
 function markRead( id, time ) {
-	sajax_do_call( 'Intercom::markRead', [ id ], function( req ) { markreadupdate( req, id, time); } );
+	$.ajax( {
+		type: 'GET',
+		url: mw.util.wikiScript(/* 'api' */),
+		data: {
+			action: 'ajax',
+			rs: 'Intercom::markRead',
+			rsargs: [ id ]
+			// format: 'json'
+		}
+	} ).done( function ( data ) {
+		if ( data === 'true' /* sic! */ ) {
+			readNextMessage( id, time );
+		}
+	} ).fail( function ( jqXHR, textStatus, errorThrown ) {
+		alert( 'An error occured:' + textStatus );
+	} );
 }
 
+// Handlers for the links/buttons in the site notice area when an intercom
+// message is active
+// @todo FIXME: Doesn't seem to work, at least w/ the DismissableSiteNotice ext. enabled
+$( function () {
+	// Next
+	$( 'body' ).on( 'click', '#intercommessage .intercom-button-next', function ( e ) {
+		e.preventDefault(); // don't follow the hash
+		nextMessage(
+			$( this ).data( 'intercom-id' ),
+			$( this ).data( 'intercom-message-time' )
+		);
+	} );
+
+	// Previous
+	$( 'body' ).on( 'click', '#intercommessage .intercom-button-previous', function ( e ) {
+		e.preventDefault(); // don't follow the hash
+		prevMessage(
+			$( this ).data( 'intercom-id' ),
+			$( this ).data( 'intercom-message-time' )
+		);
+	} );
+
+	// Mark as read
+	$( 'body' ).on( 'click', '#intercommessage .intercom-button-markasread', function ( e ) {
+		e.preventDefault(); // don't follow the hash
+		markRead(
+			$( this ).data( 'intercom-id' ),
+			$( this ).data( 'intercom-message-time' )
+		);
+	} );
+} );
+
+}( mediaWiki, jQuery ) );
 /*]]>*/
